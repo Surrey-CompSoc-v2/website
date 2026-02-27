@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 
 function CornerFrame() {
   return (
-    <div className="pointer-events-none absolute inset-2 z-20 text-white/80">
+    <div className="pointer-events-none absolute -inset-2 z-20 text-white/80">
       <svg
         width="48"
         height="48"
@@ -122,17 +122,17 @@ export default function EventModal({ event, isOpen, onClose }: EventModalProps) 
         onClick={onClose}
       >
         <div
-          className="w-full max-w-2xl rounded-3xl bg-black text-white overflow-hidden relative"
+          className="w-full max-w-2xl rounded-3xl bg-black text-white relative"
           onClick={(e) => e.stopPropagation()}
         >
           <CornerFrame />
           <div className="relative z-10">
             {event.image && (
-              <div className="aspect-video w-full overflow-hidden border-b border-white/10">
+              <div className="aspect-video w-full overflow-hidden border-b border-white/10 rounded-t-3xl">
                 <img
                   src={event.image}
                   alt={event.title}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover rounded-t-3xl"
                 />
               </div>
             )}
@@ -169,14 +169,16 @@ export default function EventModal({ event, isOpen, onClose }: EventModalProps) 
                 </p>
               )}
 
-              <div className="mt-8">
+              <div className="mt-8 flex justify-center">
                 <a
                   href={event.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block w-full rounded-xl bg-white py-3 text-center text-sm font-bold text-black transition-all hover:bg-blue-400 hover:scale-[1.02] active:scale-[0.98]"
+                  className="btn-outline-fancy inline-flex"
                 >
-                  Add to Calendar
+                  <span className="relative z-10 inline-flex justify-center py-3 px-6 text-sm font-bold">
+                    Add to Calendar
+                  </span>
                 </a>
               </div>
             </div>
@@ -184,12 +186,12 @@ export default function EventModal({ event, isOpen, onClose }: EventModalProps) 
 
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white"
+            className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-all duration-200 hover:scale-110 hover:cursor-crosshair text-white"
           >
             <svg
               className="w-6 h-6"
               fill="none"
-              stroke="currentColor"
+              stroke="white"
               viewBox="0 0 24 24"
             >
               <path

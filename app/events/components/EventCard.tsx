@@ -119,7 +119,7 @@ export default function EventCard({ event }: EventCardProps) {
       >
         <div 
           onClick={() => setIsModalOpen(true)}
-          className="relative group flex flex-col rounded-2xl p-6 overflow-hidden transition-all cursor-pointer hover:bg-white/[0.05]">
+          className="relative group flex flex-col rounded-2xl p-6 overflow-hidden transition-all cursor-pointer hover:cursor-crosshair hover:bg-white/[0.05]">
           <CornerFrame />
           {/* no outline; frame only */}
           <div className="relative z-10 flex flex-col">
@@ -139,7 +139,7 @@ export default function EventCard({ event }: EventCardProps) {
             <span>{formattedStartTime}-{formattedEndTime}</span>
           </div>
 
-          <h3 className="mt-3 text-xl font-bold text-white hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-sky-300 hover:via-cyan-300 hover:to-teal-300 transition-colors">
+          <h3 className="mt-3 text-xl font-bold bg-clip-text bg-gradient-to-r from-white via-white to-white group-hover:from-sky-300 group-hover:via-cyan-300 group-hover:to-teal-300 text-transparent transition-all duration-300">
             {event.title}
           </h3>
         </div>

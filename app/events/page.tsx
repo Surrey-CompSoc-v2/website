@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Footer from "../../components/Footer";
 import FloatingLines from "../../components/FloatingLines";
-import GradientText from "@/components/GradientText";
 import { getEvents } from "@/lib/googleCalendar";
 import EventCard from "./components/EventCard";
 
@@ -18,7 +17,6 @@ export default async function EventsPage() {
 
   return (
     <div className="bg-black text-white font-tomorrow">
-      {/* hero section mimics homepage style with floating lines and gradient heading */}
       <section className="relative w-full bg-black text-white">
         <div className="absolute inset-0 opacity-50">
           <FloatingLines
@@ -31,15 +29,8 @@ export default async function EventsPage() {
           <p className="text-xs uppercase tracking-[0.35em] text-white/60">
             Society Events
           </p>
-          <h1 className="mt-4 text-4xl sm:text-5xl lg:text-6xl font-extrabold">
-            <GradientText
-              colors={["#a34ee0", "#688ac7", "#30c0a5"]}
-              animationSpeed={6}
-              showBorder={false}
-              className="text-4xl sm:text-5xl lg:text-6xl"
-            >
-              Events
-            </GradientText>
+          <h1 className="mt-4 text-3xl font-semibold sm:text-4xl lg:text-5xl">
+            Events
           </h1>
           <p className="mx-auto mt-4 max-w-3xl text-sm text-white/70 sm:text-base">
             Come and join our events and become part of the community!
@@ -48,9 +39,11 @@ export default async function EventsPage() {
             <a
               href={`https://calendar.google.com/calendar/render?cid=${process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_ID}`}
               target="_blank"
-              className="btn-outline-fancy inline-flex items-center gap-2 text-base"
+              className="btn-outline-fancy"
             >
-              <span>📅 Add Calendar to your App</span>
+              <span className="relative z-10 inline-flex items-center gap-2">
+                📅 Add Calendar to your App
+              </span>
             </a>
           </div>
         </div>
