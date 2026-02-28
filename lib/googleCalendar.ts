@@ -19,7 +19,7 @@ export async function getEvents(): Promise<CalendarEvent[]> {
 
   try {
     const res = await fetch(url, {
-      next: { revalidate: 3600 }
+      next: { revalidate: 0 }
     });
 
     if (!res.ok) throw new Error(`Failed to fetch events: ${res.statusText}`);
