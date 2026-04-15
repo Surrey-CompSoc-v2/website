@@ -11,7 +11,11 @@
   "dependencies": {
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+<<<<<<< HEAD
     "face-api.js": "^0.22.2",
+=======
+    "face-api.js": "^0.20.0",
+>>>>>>> origin/main
     "framer-motion": "^12.33.0",
     "lucide-react": "^0.561.0",
     "motion": "^12.33.0",
@@ -30,6 +34,10 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+<<<<<<< HEAD
+=======
+    "@types/three": "^0.183.1",
+>>>>>>> origin/main
     "baseline-browser-mapping": "^2.9.19",
     "eslint": "^9",
     "eslint-config-next": "16.0.10",
