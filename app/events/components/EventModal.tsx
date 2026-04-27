@@ -1,8 +1,9 @@
 'use client';
 
 import { CalendarEvent } from "@/lib/googleCalendar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 function CornerFrame() {
   return (
@@ -78,6 +79,8 @@ interface EventModalProps {
 }
 
 export default function EventModal({ event, isOpen, onClose }: EventModalProps) {
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -89,7 +92,44 @@ export default function EventModal({ event, isOpen, onClose }: EventModalProps) 
     };
   }, [isOpen]);
 
-  if (!isOpen || !event) return null;
+  useEffect(() => {
+    if (copyStatus !== "copied") return;
+
+    const timer = window.setTimeout(() => {
+      setCopyStatus("idle");
+    }, 1800);
+
+    return () => window.clearTimeout(timer);
+  }, [copyStatus]);
+
+  if (!event) return null;
+
+  const hasLocation = Boolean(event.location?.trim());
+  const mapsQuery = hasLocation ? encodeURIComponent(event.location.trim()) : "";
+
+  const handleCopyLocation = async () => {
+    if (!hasLocation) return;
+
+    try {
+      await navigator.clipboard.writeText(event.location.trim());
+      setCopyStatus("copied");
+    } catch {
+      try {
+        const textArea = document.createElement("textarea");
+        textArea.value = event.location.trim();
+        textArea.setAttribute("readonly", "");
+        textArea.style.position = "absolute";
+        textArea.style.left = "-9999px";
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        setCopyStatus("copied");
+      } catch {
+        setCopyStatus("failed");
+      }
+    }
+  };
 
   const dateObj = new Date(event.start);
   const endObj = new Date(event.end);
@@ -111,24 +151,38 @@ export default function EventModal({ event, isOpen, onClose }: EventModalProps) 
   });
 
   return createPortal(
-    <>
-      <div
-        className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm"
-        onClick={onClose}
-      />
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            key="backdrop"
+            className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm"
+            onClick={onClose}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          />
 
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        onClick={onClose}
-      >
-        <div
-          className="w-full max-w-2xl rounded-3xl bg-black text-white relative"
-          onClick={(e) => e.stopPropagation()}
-        >
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            onClick={onClose}
+          >
+            <motion.div
+              key="modal"
+              className={`flex flex-col w-full max-h-[90vh] rounded-3xl bg-black text-white relative ${hasLocation ? "max-w-5xl" : "max-w-2xl"}`}
+              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0, scale: 0.95, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 12 }}
+              transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
+            >
           <CornerFrame />
-          <div className="relative z-10">
+
+          {/* Scrollable inner content — scrollbar hidden visually */}
+          <div className="relative z-10 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [scrollbar-width:none] [-ms-overflow-style:none]">
             {event.image && (
-              <div className="aspect-video w-full overflow-hidden border-b border-white/10 rounded-t-3xl">
+              <div className="h-100 w-full overflow-hidden border-b border-white/10 rounded-t-3xl shrink-0">
                 <img
                   src={event.image}
                   alt={event.title}
@@ -137,56 +191,81 @@ export default function EventModal({ event, isOpen, onClose }: EventModalProps) 
               </div>
             )}
 
-            <div className="p-8">
-              <h2 className="text-3xl font-bold">{event.title}</h2>
+            <div className="p-6">
+              <div className={hasLocation ? "lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-5 lg:items-start" : ""}>
+                <div>
+                  <h2 className="text-2xl font-bold">{event.title}</h2>
 
-              <div className="mt-4 flex flex-wrap gap-6 text-sm text-white/70">
-                <div className="flex items-center gap-2">
-                  <span className="text-base">📅</span>
-                  <span>{formattedDate}</span>
+                  <div className="mt-3 flex flex-wrap gap-4 text-sm text-white/70">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">📅</span>
+                      <span>{formattedDate}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🕐</span>
+                      <span>{formattedStartTime}-{formattedEndTime}</span>
+                    </div>
+                  </div>
+
+                  {hasLocation && (
+                    <button
+                      type="button"
+                      onClick={handleCopyLocation}
+                      className="mt-3 flex items-start gap-2 text-left text-sm text-white/70 hover:text-white transition-colors"
+                      title="Click to copy address"
+                    >
+                      <span className="shrink-0 text-base">📍</span>
+                      <span className="italic">{event.location}</span>
+                    </button>
+                  )}
+
+                  {hasLocation && copyStatus !== "idle" && (
+                    <p className={`mt-1 text-xs ${copyStatus === "copied" ? "text-emerald-300" : "text-red-300"}`}>
+                      {copyStatus === "copied" ? "Address copied to clipboard" : "Could not copy address"}
+                    </p>
+                  )}
+
+                  {event.description && (
+                    <p className="mt-4 text-sm leading-relaxed text-white/70">
+                      {event.description}
+                    </p>
+                  )}
+
+                  <div className="mt-6 flex justify-center lg:justify-start">
+                    <a
+                      href={event.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-outline-fancy inline-flex"
+                    >
+                      <span className="relative z-10 inline-flex justify-center py-2.5 px-5 text-sm font-bold">
+                        Add to Calendar
+                      </span>
+                    </a>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-base">🕐</span>
-                  <span>{formattedStartTime}-{formattedEndTime}</span>
-                </div>
-              </div>
 
-              {event.location && (
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-4 flex items-start gap-2 text-sm text-white/70 hover:text-white transition-colors"
-                >
-                  <span className="shrink-0 text-base">📍</span>
-                  <span className="italic">{event.location}</span>
-                </a>
-              )}
+                {hasLocation && (
+                  <div className="mt-5 lg:mt-0 shrink-0">
+                    <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/30 w-full h-[300px]">
+                      <iframe
+                        title={`${event.title} location map`}
+                        src={`https://www.google.com/maps?q=${mapsQuery}&output=embed`}
+                        className="h-full w-full"
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                      />
+                    </div>
 
-              {event.description && (
-                <p className="mt-6 leading-relaxed text-white/70">
-                  {event.description}
-                </p>
-              )}
-
-              <div className="mt-8 flex justify-center">
-                <a
-                  href={event.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-outline-fancy inline-flex"
-                >
-                  <span className="relative z-10 inline-flex justify-center py-3 px-6 text-sm font-bold">
-                    Add to Calendar
-                  </span>
-                </a>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-all duration-200 hover:scale-110 hover:cursor-crosshair text-white"
+            className="absolute top-4 right-4 z-30 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-all duration-200 hover:scale-110 hover:cursor-crosshair text-white"
           >
             <svg
               className="w-6 h-6"
@@ -202,9 +281,11 @@ export default function EventModal({ event, isOpen, onClose }: EventModalProps) 
               />
             </svg>
           </button>
-        </div>
-      </div>
-    </>,
+            </motion.div>
+          </div>
+        </>
+      )}
+    </AnimatePresence>,
     document.body
   );
 }

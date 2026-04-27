@@ -16,4 +16,15 @@ export const eventDetails: EventExtraData[] = [
     image: "/event_photos/hackathon_image.jpg",
     description: "example description",
   },
+  {
+    id: "3pa949rhjduosqpdnu9pr1rda2",
+    image: "event_photos/hackathon_image.jpg",
+    description: "tesing out this descrip[tion for events blablabla ^-^ blublublu blehblehbleh blablabla ;3",
+  },
 ];
+
+  // {
+  //   id: "",
+  //   image: "",
+  //   description: "",
+  // },
